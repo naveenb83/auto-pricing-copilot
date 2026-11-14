@@ -1,6 +1,6 @@
 # Aged-Inventory Pricing Copilot — Pacific Isles Auto Group (deck, text export)
 
-_Text export of deck.pdf (10 slides). Pacific Isles Auto Group is fictional; all figures are from synthetic data and a digital-twin backtest._
+_Text export of deck.pdf (11 slides, incl. backup execution evidence). Pacific Isles Auto Group is fictional; all figures are from synthetic data and a digital-twin backtest._
 
 ---
 
@@ -181,3 +181,29 @@ Governance demo. Masks and filters run on workspace groups in the demo; producti
 provider.
 Photos are openly licensed Wikimedia Commons images, representative of each model.
 Repo: github.com/naveenb83/auto-pricing-copilot · evidence/README.md maps every figure to its run                                                          10
+
+---
+
+## Slide 11
+
+BACKUP · EXECUTION EVIDENCE
+Committed as text in the repo (evidence/). The build actually ran — real output below.
+Lakeflow pipeline — update 5820f2a7 COMPLETED (piag-pricing-lakeflow, serverless)
+Auto Loader → 8 bronze streaming tables → 8 silver MVs (expectations) → 6 gold MVs · incremental ingest 377,835 → 0 → 3,733 rows
+Expectations caught: 36 null unit costs · 18 negative odometers · 33 $0 sale prices · 77 null VINs
+Gold query result
+SELECT count(*), count_if(days_in_stock >= 90) FROM piag_pricing.gold_inventory_current → 1,411 | 279 (= simulator ground truth 279)
+Model + real-time endpoint (aged_inventory_pricing_model v3 @champion → piag-pricing-model)
+Out-of-time AUC 0.647 vs 0.546 naive · calibrated by decile · 0 monotonicity violations
+POST R01-20774 (2026 Corolla, 237 days) → recommended_discount 2000 · p_sell_30d 0.15 → 0.55 · model_version "3" · 1,022 ms cold / ~330 ms warm
+Digital-twin backtest (today's lot, 120 days, 20 paired futures)
+Net profit +$80,273 vs flat rule (95% CI +$46.8k … +$113.7k) · wins 17/20 · aged 90+ at day 60: 291 → 186
+Gen AI (ai_query, databricks-claude-haiku-5-5)
+592 rationales · 0 parse failures · 592/592 grounded (every number checked against model facts)
+Lakebase + Lakehouse Sync
+Publish: serving.inventory_current 1,411 / 1,411 rows · all_counts_match = true
+Decision #1006 overridden: model_value 1500 → override_value 1000 · reason customer_in_negotiation → in UC lb_pricing_decisions_history within seconds
+Genie · App · Orchestration
+Genie benchmark final pass 12/12 result-set matches · app piag-pricing-copilot RUNNING (deploy SUCCEEDED) · nightly job run 316963850087596 SUCCESS,
+7/7 checks PASS
+Sources: evidence/02, 04, 04b, 05, 06, 07, 08, 09 · github.com/naveenb83/auto-pricing-copilot                                                            11
