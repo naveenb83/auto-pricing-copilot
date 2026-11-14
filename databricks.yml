@@ -11,6 +11,9 @@ variables:
   schema:
     description: Schema holding every governed asset for the pricing copilot
     default: piag_pricing
+  pricing_model_version:
+    description: UC model version served by the real-time endpoint (the @champion version)
+    default: "2"
   warehouse_id:
     description: SQL warehouse used by Genie, the app and SQL tasks
     default: 8b226d8722ba3ab2

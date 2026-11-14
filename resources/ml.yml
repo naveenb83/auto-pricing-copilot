@@ -1,0 +1,51 @@
+resources:
+  model_serving_endpoints:
+    pricing_endpoint:
+      name: piag-pricing-model
+      config:
+        served_entities:
+          - name: pricing-champion
+            entity_name: ${var.catalog}.${var.schema}.aged_inventory_pricing_model
+            entity_version: ${var.pricing_model_version}
+            workload_size: Small
+            scale_to_zero_enabled: true
+      ai_gateway:
+        inference_table_config:
+          enabled: true
+          catalog_name: ${var.catalog}
+          schema_name: ${var.schema}
+          table_name_prefix: pricing_endpoint
+        usage_tracking_config:
+          enabled: true
+      tags:
+        - key: piag_use_case
+          value: aged_inventory_pricing
+
+  jobs:
+    train_pricing_model:
+      name: piag-train-pricing-model
+      description: "Train + validate the weekly sale-hazard model, register the pricing pyfunc in UC (@champion), batch-score today's lot and run the digital-twin backtest vs the flat rule."
+      tasks:
+        - task_key: train_register
+          environment_key: ml
+          spark_python_task:
+            python_file: ../ml/train.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}", --volume_root, "/Volumes/${var.catalog}/${var.schema}"]
+        - task_key: batch_score
+          depends_on: [{task_key: train_register}]
+          environment_key: ml
+          spark_python_task:
+            python_file: ../ml/score_inventory.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}"]
+        - task_key: backtest_vs_flat_rule
+          depends_on: [{task_key: train_register}]
+          environment_key: ml
+          spark_python_task:
+            python_file: ../ml/backtest.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}", --volume_root, "/Volumes/${var.catalog}/${var.schema}", --seeds, "20"]
+      environments:
+        - environment_key: ml
+          spec:
+            environment_version: "4"
+            dependencies:
+              - mlflow>=3.1
