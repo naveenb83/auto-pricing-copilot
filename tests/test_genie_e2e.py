@@ -11,8 +11,9 @@ def test_space_has_tables_metric_view_and_benchmarks():
     import json
     sp = WorkspaceClient(profile=PROFILE).genie.get_space(SPACE, include_serialized_space=True)
     d = json.loads(sp.serialized_space)
-    assert len(d["data_sources"]["tables"]) == 9
-    assert d["data_sources"]["metric_views"][0]["identifier"].endswith("piag_pricing_kpis")
+    names = {t["identifier"].split(".")[-1] for t in d["data_sources"]["tables"]}
+    # Genie stores the metric view alongside the tables
+    assert len(names) == 10 and "piag_pricing_kpis" in names and "pricing_decisions" in names
     assert len(d["benchmarks"]["questions"]) == 12
 
 
