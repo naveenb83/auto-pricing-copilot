@@ -60,7 +60,7 @@ TEXT = [
     "Gross profit and unit cost columns are masked (NULL) for users who are not margin viewers — if they come back NULL, say the user lacks access rather than reporting zero.",
     "Date windows: 'last N days' means date > DATE'2026-11-13' - INTERVAL N DAYS AND date <= DATE'2026-11-13' (inclusive of the business date).",
     "Sales, wholesale auction exits and dealer trades: use gold_sales_enriched (channel = retail | wholesale | dealer_trade, sale_date, sale_month).",
-    "Always show money in USD rounded to whole dollars and percentages to one decimal place.",
+    "Always show money in USD rounded to whole dollars, percentages to one decimal place, and averages of days to one decimal place.",
 ]
 
 SAMPLES = [
@@ -109,8 +109,8 @@ BENCH = [
      f"SELECT count(*) FROM {FQ}.gold_sales_enriched WHERE channel = 'retail' AND sale_month = DATE'2026-10-01'"),
     ("What is the average days in stock of on-hand used vehicles?",
      f"SELECT round(avg(days_in_stock), 1) FROM {FQ}.gold_inventory_current WHERE condition = 'used'"),
-    ("How many units were wholesaled at auction in the last 90 days before the business date?",
-     f"SELECT count(*) FROM {FQ}.gold_sales_enriched WHERE channel = 'wholesale' AND sale_date > DATE'2026-11-13' - INTERVAL 90 DAYS"),
+    ("How many units were wholesaled at auction in the 90 days up to and including the business date?",
+     f"SELECT count(*) FROM {FQ}.gold_sales_enriched WHERE channel = 'wholesale' AND sale_date > DATE'2026-11-13' - INTERVAL 90 DAYS AND sale_date <= DATE'2026-11-13'"),
     ("Which make has the most aged 90+ day units on hand?",
      f"SELECT make, count(*) FROM {FQ}.gold_inventory_current WHERE days_in_stock >= 90 GROUP BY make ORDER BY 2 DESC LIMIT 1"),
 ]

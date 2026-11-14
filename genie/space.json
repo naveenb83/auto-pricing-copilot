@@ -265,7 +265,7 @@
      "Gross profit and unit cost columns are masked (NULL) for users who are not margin viewers \u2014 if they come back NULL, say the user lacks access rather than reporting zero.\n",
      "Date windows: 'last N days' means date > DATE'2026-11-13' - INTERVAL N DAYS AND date <= DATE'2026-11-13' (inclusive of the business date).\n",
      "Sales, wholesale auction exits and dealer trades: use gold_sales_enriched (channel = retail | wholesale | dealer_trade, sale_date, sale_month).\n",
-     "Always show money in USD rounded to whole dollars and percentages to one decimal place.\n"
+     "Always show money in USD rounded to whole dollars, percentages to one decimal place, and averages of days to one decimal place.\n"
     ]
    }
   ],
@@ -339,15 +339,15 @@
     ]
    },
    {
-    "id": "192ec0b8fd3927c24717dd021898ee11",
+    "id": "18d82700f778fba81d11fbda9eb7bf6d",
     "question": [
-     "How many units were wholesaled at auction in the last 90 days before the business date?"
+     "How many units were wholesaled at auction in the 90 days up to and including the business date?"
     ],
     "answer": [
      {
       "format": "SQL",
       "content": [
-       "SELECT count(*) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_sales_enriched WHERE channel = 'wholesale' AND sale_date > DATE'2026-11-13' - INTERVAL 90 DAYS"
+       "SELECT count(*) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_sales_enriched WHERE channel = 'wholesale' AND sale_date > DATE'2026-11-13' - INTERVAL 90 DAYS AND sale_date <= DATE'2026-11-13'"
       ]
      }
     ]
