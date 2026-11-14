@@ -1,0 +1,15 @@
+resources:
+  jobs:
+    genai_rationale:
+      name: piag-genai-rationale
+      description: "AI Functions: grounded pricing rationale + segment promo copy for every aged unit; deterministic segment targeting from campaign responses."
+      tasks:
+        - task_key: rationale
+          environment_key: genai
+          spark_python_task:
+            python_file: ../ml/genai_rationale.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}"]
+      environments:
+        - environment_key: genai
+          spec:
+            environment_version: "4"
