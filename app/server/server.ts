@@ -121,7 +121,8 @@ createApp({
         const rooftop = str(req.query.rooftop);
         const bucket = str(req.query.bucket);
         const status = str(req.query.status);
-        const minAge = Math.max(0, Math.min(400, Number(req.query.minAge ?? 45) || 0));
+        const minAgeRaw = Number(req.query.minAge ?? 45);
+        const minAge = Number.isFinite(minAgeRaw) ? Math.max(0, Math.min(400, minAgeRaw)) : 45;
         const limit = Math.max(1, Math.min(200, Number(req.query.limit ?? 50) || 50));
         const offset = Math.max(0, Number(req.query.offset ?? 0) || 0);
         try {
@@ -147,7 +148,19 @@ createApp({
             [minAge, rooftop, bucket, status, limit, offset],
           );
           const rows: Row[] = r.rows.map((row: Row): Row => ({ ...row, image_file: imageFile(row.image_path) }));
-          res.json({ rows, total: rows.length ? num(rows[0].total_rows) : 0, asOf: AS_OF });
+          let total = rows.length ? num(rows[0].total_rows) : 0;
+          if (!rows.length && offset > 0) {
+            // paged past the end: still report the real match count so the client can page back
+            const c = await pg(
+              `WITH latest AS (SELECT DISTINCT ON (vin) vin, decision FROM pricing_ops.pricing_decisions ORDER BY vin, decided_at DESC)
+               SELECT count(*) AS n FROM serving.recommendations r LEFT JOIN latest l USING (vin)
+               WHERE r.days_in_stock >= $1 AND ($2 = '' OR r.rooftop_id = $2) AND ($3 = '' OR r.aging_bucket = $3)
+                 AND ($4 = '' OR coalesce(l.decision, 'pending') = $4)`,
+              [minAge, rooftop, bucket, status],
+            );
+            total = num(c.rows[0]?.n);
+          }
+          res.json({ rows, total, asOf: AS_OF });
         } catch (e) {
           res.status(503).json({ error: 'Pricing queue unavailable', detail: (e as Error).message });
         }
@@ -210,6 +223,10 @@ createApp({
           const raw: unknown = await appkit.serving().invoke({ dataframe_records: [modelRecord(inv.rows[0], priceOverride)] });
           const latencyMs = Date.now() - t0;
           const p = predictionsOf(raw)[0];
+          if (!p) {
+            res.status(502).json({ error: 'The model returned no prediction for this vehicle — showing the overnight batch recommendation instead' });
+            return;
+          }
           let curve: unknown = [];
           try {
             curve = JSON.parse(str(p.curve_json));
