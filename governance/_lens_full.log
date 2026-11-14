@@ -1,0 +1,11 @@
+## governance/lens_check.sql
+[ctx] catalog=serverless_stable_69fppe_catalog
+[ctx] schema=piag_pricing
+[OK    1.5s] SELECT current_user() AS user_name, is_member('piag_margin_viewers') AS margin_viewer, is_member('piag_crm_admins') AS crm_admin, is_member('piag_grou  -> [['naveen.balachandran@databricks.com', 'true', 'true', 'true', 'false']]
+[OK    0.8s] SELECT count(*) AS vehicle_rows_visible, count(DISTINCT rooftop_id) AS rooftops_visible, count(unit_cost) AS unit_cost_values_visible, round(avg(front  -> [['17862', '6', '17862', '1651.0']]
+[OK    0.9s] SELECT rooftop_id, count(*) AS sales, round(sum(total_gross), 0) AS total_gross FROM gold_sales_enriched GROUP BY 1 ORDER BY 1  -> [['R01', '2712', '8438130.0'], ['R02', '2728', '8169886.0'], ['R03', '2676', '8160586.0']]
+[OK    0.8s] SELECT customer_id, first_name, last_name, email, phone, segment FROM silver_customers ORDER BY customer_id LIMIT 3  -> [['C100000', 'Isabella', 'Sato', 'isabella.sato0@example.com', '(555) 494-2018', 'trades_and_fleet'], ['C100001', 'Noah', 'Santos', 'noah.santos1@example.com', '(555) 624-8138', 'young_family'], ['C100002', 'Elena', 'Young', 'elena.young2@example.com', '(555) 585-1302', 'value_retiree']]
+## governance/lens_metric_view.sql
+[ctx] catalog=serverless_stable_69fppe_catalog
+[ctx] schema=piag_pricing
+[OK    1.4s] SELECT `Rooftop`, MEASURE(`Units On Hand`) AS units_on_hand, MEASURE(`Aged 90+ Units`) AS aged_90_plus, round(MEASURE(`Aged 90+ Share`), 3) AS aged_90  -> [['Bayside Auto Centre', '216', '39', '0.181', '4809.0', '1942.0'], ['Eastgate Motors', '264', '62', '0.235', '6147.0', '1860.0'], ['Harbourview Motors', '194', '48', '0.247', '4298.0', '1920.0']]
