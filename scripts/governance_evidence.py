@@ -32,7 +32,9 @@ ttags = q(f"SELECT table_name, tag_name, tag_value FROM {C}.information_schema.t
 funcs = q(f"SELECT routine_name, comment FROM {C}.information_schema.routines WHERE routine_schema = '{S}' ORDER BY 1")
 lineage = q(f"SELECT DISTINCT replace(source_table_full_name, '{C}.{S}.', '') AS source, replace(target_table_full_name, '{C}.{S}.', '') AS target "
             f"FROM system.access.table_lineage WHERE target_table_full_name LIKE '{C}.{S}.%' AND source_table_full_name IS NOT NULL "
-            f"AND source_table_full_name <> target_table_full_name AND event_date >= '2026-11-14' ORDER BY target, source")
+            f"AND source_table_full_name <> target_table_full_name AND event_date >= current_date() - INTERVAL 30 DAYS ORDER BY target, source")
+if not lineage:
+    raise SystemExit("No lineage rows in the last 30 days - run the pipeline first so lineage is recorded")
 comments = q(f"SELECT table_name, table_type, comment FROM {C}.information_schema.tables WHERE table_schema = '{S}' ORDER BY 1")
 doc = [
     "# Evidence 03 — Unity Catalog governance (ABAC masks + row filter, tags, metric view, lineage)\n",

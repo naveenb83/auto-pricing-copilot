@@ -26,14 +26,20 @@ for spec in 'piag_sensitivity|financial,pii|PIAG data sensitivity class: financi
   fi
 done
 
+lookup() {  # lookup <users|groups> <scim filter> -> id, or exit with a clear error
+  local id
+  id=$(databricks "$1" list --filter "$2" -p "$P" -o json | jq -r '.[0].id // empty')
+  if [ -z "$id" ]; then echo "ERROR: no $1 match for: $2" >&2; exit 1; fi
+  echo "$id"
+}
 add_member() {  # add_member <group> <scim-id>
   local gid
-  gid=$(databricks groups list --filter "displayName eq '$1'" -p "$P" -o json | jq -r '.[0].id')
+  gid=$(lookup groups "displayName eq '$1'")
   databricks groups patch "$gid" -p "$P" --json \
     "{\"schemas\":[\"urn:ietf:params:scim:api:messages:2.0:PatchOp\"],\"Operations\":[{\"op\":\"add\",\"path\":\"members\",\"value\":[{\"value\":\"$2\"}]}]}" >/dev/null
   echo "added $2 to $1"
 }
 for email in "$@"; do
-  uid=$(databricks users list --filter "userName eq '$email'" -p "$P" -o json | jq -r '.[0].id')
+  uid=$(lookup users "userName eq '$email'")
   for g in piag_margin_viewers piag_crm_admins piag_group_leadership piag_pricing_managers; do add_member "$g" "$uid"; done
 done

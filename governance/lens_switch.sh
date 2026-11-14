@@ -2,10 +2,16 @@
 # Switch a user's PIAG "lens" for the governance demo:  lens_switch.sh <profile> <email> full|rooftop_R03
 set -euo pipefail
 P="$1"; EMAIL="$2"; LENS="$3"
-uid=$(databricks users list --filter "userName eq '$EMAIL'" -p "$P" -o json | jq -r '.[0].id')
+lookup() {  # lookup <users|groups> <scim filter> -> id, or exit with a clear error
+  local id
+  id=$(databricks "$1" list --filter "$2" -p "$P" -o json | jq -r '.[0].id // empty')
+  if [ -z "$id" ]; then echo "ERROR: no $1 match for: $2" >&2; exit 1; fi
+  echo "$id"
+}
+uid=$(lookup users "userName eq '$EMAIL'")
 member() {  # member add|remove <group>
   local gid op="$1"
-  gid=$(databricks groups list --filter "displayName eq '$2'" -p "$P" -o json | jq -r '.[0].id')
+  gid=$(lookup groups "displayName eq '$2'")
   if [ "$op" = add ]; then
     body="{\"schemas\":[\"urn:ietf:params:scim:api:messages:2.0:PatchOp\"],\"Operations\":[{\"op\":\"add\",\"path\":\"members\",\"value\":[{\"value\":\"$uid\"}]}]}"
   else
