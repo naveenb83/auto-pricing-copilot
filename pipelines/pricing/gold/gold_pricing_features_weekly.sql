@@ -21,7 +21,10 @@ mk AS (
          max_by(c.market_days_supply, c.snapshot_date) AS market_days_supply
   FROM base b JOIN silver_market_comps c ON c.vin = b.vin
    AND c.snapshot_date BETWEEN b.week_start AND date_add(b.week_start, 6)
-  GROUP BY b.vin, b.week_start)
+  GROUP BY b.vin, b.week_start),
+disp AS (  -- first disposition per VIN on or before the business date (one row per VIN)
+  SELECT vin, sale_date, channel FROM silver_sales WHERE sale_date <= DATE '${as_of_date}'
+  QUALIFY row_number() OVER (PARTITION BY vin ORDER BY sale_date, deal_id) = 1)
 SELECT b.vin, b.week_start, month(b.week_start) AS month,
        v.rooftop_id, v.condition, v.make, v.model, v.body_class, v.model_year, v.exterior_colour, v.mileage,
        greatest(0, year(b.week_start) - v.model_year) AS vehicle_age_years,
@@ -41,5 +44,5 @@ FROM base b
 JOIN silver_vehicles v ON v.vin = b.vin
 LEFT JOIN px ON px.vin = b.vin AND px.week_start = b.week_start
 LEFT JOIN mk ON mk.vin = b.vin AND mk.week_start = b.week_start
-LEFT JOIN silver_sales s ON s.vin = b.vin
+LEFT JOIN disp s ON s.vin = b.vin
 WHERE mk.market_price IS NOT NULL;

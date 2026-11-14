@@ -74,7 +74,7 @@ def main(pid: str) -> None:
         "## Pipeline updates (incremental ingestion proof)",
         "Update 1 = initial backfill of 78 weekly drops; update 2 = code change, **no new files → 0 bronze rows**; "
         "update 3 = after `piag-release-final-drop` delivered the 2026-11-13 drop → **only the new files ingested**; "
-        "update 4 = silver rule change (sale-price expectation switched from drop to warn).",
+        "later updates = code changes only (sale-price rule drop→warn, review fixes) — no new files, so 0 bronze rows.",
         table(upd),
         "\n## Bronze rows ingested by update 3 (final weekly drop only)",
         table(incr),

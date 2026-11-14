@@ -4,7 +4,7 @@ Pipeline `piag-pricing-lakeflow` (id `9cd13098-a413-48f6-bff8-eadf9c20b653`), se
 All tables below are queried from the pipeline **event log** (`event_log()` TVF) and the published gold tables.
 
 ## Pipeline updates (incremental ingestion proof)
-Update 1 = initial backfill of 78 weekly drops; update 2 = code change, **no new files → 0 bronze rows**; update 3 = after `piag-release-final-drop` delivered the 2026-11-13 drop → **only the new files ingested**; update 4 = silver rule change (sale-price expectation switched from drop to warn).
+Update 1 = initial backfill of 78 weekly drops; update 2 = code change, **no new files → 0 bronze rows**; update 3 = after `piag-release-final-drop` delivered the 2026-11-13 drop → **only the new files ingested**; later updates = code changes only (sale-price rule drop→warn, review fixes) — no new files, so 0 bronze rows.
 ```text
 bronze_rows_ingested | ended                    | started                  | update_id                            | final_state
 ---------------------+--------------------------+--------------------------+--------------------------------------+------------
@@ -12,6 +12,7 @@ bronze_rows_ingested | ended                    | started                  | upd
 0                    | 2026-11-14T13:07:00.753Z | 2026-11-14T13:06:12.951Z | 683e337c-673b-4717-8fd1-540250e8c1fb | COMPLETED  
 3733                 | 2026-11-14T13:09:13.084Z | 2026-11-14T13:08:09.538Z | 0f4eb445-9266-4a54-a2d8-0e228a144c62 | COMPLETED  
 0                    | 2026-11-14T13:11:06.557Z | 2026-11-14T13:10:16.087Z | 68b0fd1c-8915-4e1b-b174-d317431d24c3 | COMPLETED  
+0                    | 2026-11-14T13:17:23.730Z | 2026-11-14T13:16:36.080Z | 3133414e-5195-4561-b9a2-a857d2c6ad6d | COMPLETED  
 ```
 
 ## Bronze rows ingested by update 3 (final weekly drop only)

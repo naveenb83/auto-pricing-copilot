@@ -11,7 +11,9 @@ SELECT w.week_end, s.rooftop_id, s.rooftop_name,
                 AND datediff(w.week_end, s.acquisition_date) >= 90) AS units_aged_90_plus,
        count_if(s.status = 'retail' AND s.disposed_date BETWEEN date_sub(w.week_end, 6) AND w.week_end) AS retail_units_sold,
        round(avg(CASE WHEN s.status = 'retail' AND s.disposed_date BETWEEN date_sub(w.week_end, 6) AND w.week_end THEN s.front_gross END), 0) AS avg_front_gross,
-       round(sum(CASE WHEN s.acquisition_date <= w.week_end AND (s.disposed_date IS NULL OR s.disposed_date > date_sub(w.week_end, 6))
-                      THEN 7 * (s.daily_floorplan_interest + s.lot_cost_per_day) END), 0) AS carrying_cost_week
+       -- charge only the days each unit was actually on the lot inside this week
+       round(sum(greatest(0, datediff(least(w.week_end, coalesce(date_sub(s.disposed_date, 1), w.week_end)),
+                                       greatest(date_sub(w.week_end, 6), s.acquisition_date)) + 1)
+                 * (s.daily_floorplan_interest + s.lot_cost_per_day)), 0) AS carrying_cost_week
 FROM weeks w CROSS JOIN gold_vehicle_status s
 GROUP BY ALL;

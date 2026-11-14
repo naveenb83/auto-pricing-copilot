@@ -17,4 +17,5 @@ FROM read_files('${landing_path}/reference/floorplan_rates.csv', format => 'csv'
 CREATE OR REFRESH MATERIALIZED VIEW ref_vehicle_images
 COMMENT "Reference. One openly licensed Wikimedia Commons photo per make/model, with author and licence for attribution."
 AS SELECT make, model, image_file, concat('${media_path}/', image_file) AS image_path, source_page, author, licence, licence_url
-FROM read_files('${media_path}/vehicle_images.csv', format => 'csv', header => true);
+FROM read_files('${media_path}/vehicle_images.csv', format => 'csv', header => true)
+QUALIFY row_number() OVER (PARTITION BY make, model ORDER BY image_file) = 1;  -- exactly one photo per make/model
