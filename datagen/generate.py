@@ -367,6 +367,7 @@ def _dirty(df: pd.DataFrame, rng: np.random.Generator, dup: float = 0.0, null_co
     out = df.copy()
     if dup and len(out):
         out = pd.concat([out, out.sample(frac=dup, random_state=int(rng.integers(1 << 31)))])
+        out = out.reset_index(drop=True)  # unique labels so nulls/bad values hit single rows, not dup pairs
     for col, frac in (null_cols or {}).items():
         idx = out.sample(frac=frac, random_state=int(rng.integers(1 << 31))).index
         out.loc[idx, col] = None
