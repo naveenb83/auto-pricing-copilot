@@ -1,0 +1,24 @@
+bundle:
+  name: auto-pricing-copilot
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    description: Unity Catalog catalog for the build
+    default: serverless_stable_69fppe_catalog
+  schema:
+    description: Schema holding every governed asset for the pricing copilot
+    default: piag_pricing
+  warehouse_id:
+    description: SQL warehouse used by Genie, the app and SQL tasks
+    default: 8b226d8722ba3ab2
+
+targets:
+  dev:
+    default: true
+    workspace:
+      host: https://fevm-serverless-stable-69fppe.cloud.databricks.com
+    presets:
+      trigger_pause_status: PAUSED
