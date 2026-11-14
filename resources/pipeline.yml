@@ -1,0 +1,18 @@
+resources:
+  pipelines:
+    pricing_pipeline:
+      name: piag-pricing-lakeflow
+      catalog: ${var.catalog}
+      schema: ${resources.schemas.piag_pricing.name}
+      serverless: true
+      continuous: false
+      channel: CURRENT
+      photon: true
+      root_path: ../pipelines/pricing
+      libraries:
+        - glob:
+            include: ../pipelines/pricing/**
+      configuration:
+        landing_path: /Volumes/${var.catalog}/${var.schema}/landing
+        media_path: /Volumes/${var.catalog}/${var.schema}/media
+        as_of_date: "2026-11-13"
