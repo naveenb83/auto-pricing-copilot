@@ -1,0 +1,7 @@
+## governance/lens_check.sql
+[ctx] catalog=serverless_stable_69fppe_catalog
+[ctx] schema=piag_pricing
+[OK    1.4s] SELECT current_user() AS user_name, is_member('piag_margin_viewers') AS margin_viewer, is_member('piag_crm_admins') AS crm_admin, is_member('piag_grou  -> [['naveen.balachandran@databricks.com', 'false', 'false', 'false', 'true']]
+[OK    1.2s] SELECT count(*) AS vehicle_rows_visible, count(DISTINCT rooftop_id) AS rooftops_visible, count(unit_cost) AS unit_cost_values_visible, round(avg(front  -> [['2940', '1', '0', None]]
+[OK    1.1s] SELECT rooftop_id, count(*) AS sales, round(sum(total_gross), 0) AS total_gross FROM gold_sales_enriched GROUP BY 1 ORDER BY 1  -> [['R03', '2676', None]]
+[OK    1.2s] SELECT customer_id, first_name, last_name, email, phone, segment FROM silver_customers ORDER BY customer_id LIMIT 3  -> [['C100000', 'Isabella', 'S****', 'i****', '(****', 'trades_and_fleet'], ['C100001', 'Noah', 'S****', 'n****', '(****', 'young_family'], ['C100002', 'Elena', 'Y****', 'e****', '(****', 'value_retiree']]

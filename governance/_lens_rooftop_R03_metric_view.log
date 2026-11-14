@@ -1,0 +1,4 @@
+## governance/lens_metric_view.sql
+[ctx] catalog=serverless_stable_69fppe_catalog
+[ctx] schema=piag_pricing
+[OK    2.6s] SELECT `Rooftop`, MEASURE(`Units On Hand`) AS units_on_hand, MEASURE(`Aged 90+ Units`) AS aged_90_plus, round(MEASURE(`Aged 90+ Share`), 3) AS aged_90  -> [['Eastgate Motors', '264', '62', '0.235', '6147.0', None]]

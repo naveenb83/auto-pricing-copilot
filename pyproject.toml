@@ -10,6 +10,7 @@ dependencies = [
   "mlflow>=2.17,<3.5",
   "requests>=2.31",
   "pillow>=10",
+  "databricks-sdk>=0.166.0",
 ]
 
 [dependency-groups]
