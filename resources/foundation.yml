@@ -1,0 +1,57 @@
+resources:
+  schemas:
+    piag_pricing:
+      catalog_name: ${var.catalog}
+      name: ${var.schema}
+      comment: "Pacific Isles Auto Group (fictional) aged-inventory pricing copilot. Synthetic data only."
+
+  volumes:
+    landing:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.piag_pricing.name}
+      name: landing
+      volume_type: MANAGED
+      comment: "Raw weekly dealer-management-system file drops (CSV / JSON lines) ingested by Lakeflow."
+    media:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.piag_pricing.name}
+      name: media
+      volume_type: MANAGED
+      comment: "Openly licensed (CC BY / CC BY-SA / PD) Wikimedia Commons vehicle photos + attribution manifest."
+
+  jobs:
+    generate_data:
+      name: piag-generate-synthetic-data
+      description: "Simulate 18 months of dealer-group operations and land weekly DMS file drops in the landing volume."
+      parameters:
+        - name: hold_last_drop
+          default: "true"
+      tasks:
+        - task_key: simulate
+          environment_key: datagen
+          spark_python_task:
+            python_file: ../jobs/generate_data.py
+            parameters:
+              - --out
+              - /Volumes/${var.catalog}/${var.schema}/landing
+              - --hold_last_drop
+              - "{{job.parameters.hold_last_drop}}"
+      environments:
+        - environment_key: datagen
+          spec:
+            environment_version: "4"
+    release_final_drop:
+      name: piag-release-final-drop
+      description: "Deliver the held-back final weekly drop into landing to demonstrate incremental ingestion."
+      tasks:
+        - task_key: release
+          environment_key: datagen
+          spark_python_task:
+            python_file: ../jobs/release_drop.py
+            parameters:
+              - --landing
+              - /Volumes/${var.catalog}/${var.schema}/landing
+      environments:
+        - environment_key: datagen
+          spec:
+            environment_version: "4"
