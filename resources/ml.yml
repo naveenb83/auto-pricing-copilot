@@ -37,6 +37,12 @@ resources:
           spark_python_task:
             python_file: ../ml/score_inventory.py
             parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}"]
+        - task_key: promote_endpoint
+          depends_on: [{task_key: train_register}]
+          environment_key: ml
+          spark_python_task:
+            python_file: ../ml/promote_endpoint.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}"]
         - task_key: backtest_vs_flat_rule
           depends_on: [{task_key: train_register}]
           environment_key: ml

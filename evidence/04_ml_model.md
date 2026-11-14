@@ -1,16 +1,17 @@
-# Evidence 04 — Pricing model: training, out-of-time validation, truth recovery, batch scoring, digital-twin backtest
+# Evidence 04 — Pricing model: training, out-of-time validation, truth recovery, batch scoring, endpoint promotion, digital-twin backtest
 
-Single serverless job, three tasks (train_register → batch_score, backtest_vs_flat_rule). Model: weekly sale-hazard HistGradientBoosting, monotone-decreasing in price-to-market, wrapped with an expected-profit optimiser (16-week horizon: floor-plan + lot + depreciation holding cost, auction/dealer-trade exit risk) and pricing-manager guardrails (max 8% cut, max $500 on units < 14 days).
+Single serverless job, four tasks (train_register → batch_score, promote_endpoint, backtest_vs_flat_rule). Model: weekly sale-hazard HistGradientBoosting, monotone-decreasing in price-to-market, wrapped with an expected-profit optimiser (16-week horizon: floor-plan + lot + depreciation holding cost, auction/dealer-trade exit risk) and pricing-manager guardrails (max 8% cut, max $500 on units < 14 days).
 
-Job `piag-train-pricing-model` (job_id 1077639647439960), run_id 384952138147451 — captured 2026-11-14T14:07Z via `databricks jobs get-run(-output)`.
+Job `piag-train-pricing-model` (job_id 1077639647439960), run_id 326177653311750 — captured 2026-11-14T14:21Z via `databricks jobs get-run(-output)`.
 
 ```text
 result_state : SUCCESS
-start (UTC)  : 2026-11-14T13:47:20Z
-end (UTC)    : 2026-11-14T13:56:52Z
-task batch_score                  SUCCESS  2026-11-14T13:48:25Z -> 2026-11-14T13:49:59Z
-task train_register               SUCCESS  2026-11-14T13:47:20Z -> 2026-11-14T13:48:25Z
-task backtest_vs_flat_rule        SUCCESS  2026-11-14T13:48:25Z -> 2026-11-14T13:56:52Z
+start (UTC)  : 2026-11-14T14:11:11Z
+end (UTC)    : 2026-11-14T14:20:11Z
+task batch_score                  SUCCESS  2026-11-14T14:12:08Z -> 2026-11-14T14:13:30Z
+task promote_endpoint             SUCCESS  2026-11-14T14:12:08Z -> 2026-11-14T14:20:11Z
+task train_register               SUCCESS  2026-11-14T14:11:11Z -> 2026-11-14T14:12:08Z
+task backtest_vs_flat_rule        SUCCESS  2026-11-14T14:12:08Z -> 2026-11-14T14:19:58Z
 ```
 
 ### Task `batch_score` stdout
@@ -35,7 +36,13 @@ stock_number      make      model  model_year  days_in_stock  current_price  pri
    R01-27212    Toyota    Corolla        2027             22        27920.0           1.0193                2000.0                 0.0                       58.4                               24.2               1442.0
    R02-25593 Chevrolet Equinox EV        2025             80        27595.0           1.0221                2000.0                 0.0                       76.3                               43.9               1435.0
    R04-27129      Ford   Explorer        2027             24        50745.0           1.0216                3000.0                 0.0                       59.4                               39.4               1398.0
-== SUMMARY {"model_version": "2", "vehicles_scored": 1411, "recommend_hold_price": 677, "recommend_cut": 734, "guardrail_applied": 275, "aged45_units": 592, "aged45_model_total_discount": 500250.0, "aged45_flat_rule_total_discount": 15250.0, "expected_profit_uplift_vs_flat_rule_total": 279947.0, "mean_expected_days_now": 58.1, "mean_expected_days_recommended": 49.2}
+== SUMMARY {"model_version": "3", "vehicles_scored": 1411, "recommend_hold_price": 677, "recommend_cut": 734, "guardrail_applied": 275, "aged45_units": 592, "aged45_model_total_discount": 500250.0, "aged45_flat_rule_total_discount": 15250.0, "expected_profit_uplift_vs_flat_rule_total": 279947.0, "mean_expected_days_now": 58.1, "mean_expected_days_recommended": 49.2}
+```
+
+### Task `promote_endpoint` stdout
+```text
+updating endpoint piag-pricing-model: v2 -> v3 (champion)
+endpoint piag-pricing-model now serves v3
 ```
 
 ### Task `train_register` stdout
@@ -102,12 +109,6 @@ performance                      4.07                      8.0                  
 pickup                           5.72                     10.0                  0.57
    Spearman rank correlation model vs truth across body classes: 0.72
 == Monotonicity check over price_to_market grid [1.1, 1.05, 1.0, 0.97, 0.94]: 0 violations across 6,000 vehicles
-
-
-  warnings.warn(
-2026/11/14 13:48:15 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
-
-
 == Example served prediction (3 on-hand vehicles)
                  vin  recommended_discount  recommended_price  p_sell_30d_now  p_sell_30d_recommended  expected_days_to_sell_now  expected_days_to_sell_recommended  expected_profit_now  expected_profit_recommended  expected_profit_flat_rule  flat_rule_discount  uplift_vs_flat_rule  guardrail_applied  unconstrained_discount model_version
 0  1FT01E755LR408907                 500.0            11595.0          0.3851                  0.5367                       53.7                               38.4               -637.0                       -395.0                     -637.0                 0.0                242.0               True                   750.0     candidate
@@ -115,14 +116,16 @@ pickup                           5.72                     10.0                  
 2  1FT0LVHH8PX832831                   0.0            22595.0          0.3058                  0.3058                       60.0                               60.0               1838.0                       1838.0                     1838.0                 0.0                  0.0              False                     0.0     candidate
 
 
-🔗 View Logged Model at: https://fevm-serverless-stable-69fppe.cloud.databricks.com/ml/experiments/1259616973424337/models/m-194e318a2ac94168b7655a33aab3d17c?o=7474651524368619
+  warnings.warn(
+2026/11/14 14:12:00 WARNING mlflow.models.model: `artifact_path` is deprecated. Please use `name` instead.
+🔗 View Logged Model at: https://fevm-serverless-stable-69fppe.cloud.databricks.com/ml/experiments/1259616973424337/models/m-4eeef63ee60e4c11bed4c6a59106e36d?o=7474651524368619
 Registered model 'serverless_stable_69fppe_catalog.piag_pricing.aged_inventory_pricing_model' already exists. Creating a new version of this model...
-🔗 Created version '2' of model 'serverless_stable_69fppe_catalog.piag_pricing.aged_inventory_pricing_model': https://fevm-serverless-stable-69fppe.cloud.databricks.com/explore/data/models/serverless_stable_69fppe_catalog/piag_pricing/aged_inventory_pricing_model/version/2?o=7474651524368619
+🔗 Created version '3' of model 'serverless_stable_69fppe_catalog.piag_pricing.aged_inventory_pricing_model': https://fevm-serverless-stable-69fppe.cloud.databricks.com/explore/data/models/serverless_stable_69fppe_catalog/piag_pricing/aged_inventory_pricing_model/version/3?o=7474651524368619
 
 
-== Registered serverless_stable_69fppe_catalog.piag_pricing.aged_inventory_pricing_model version 2 with alias @champion (run 2ad44c07c1b14619ab1075f38f72c92d)
-== SUMMARY {"registered_model": "serverless_stable_69fppe_catalog.piag_pricing.aged_inventory_pricing_model", "version": "2", "run_id": "2ad44c07c1b14619ab1075f38f72c92d", "test_auc": 0.6465, "test_log_loss": 0.3511, "test_brier": 0.102, "naive_auc": 0.5455, "naive_log_loss": 0.364, "test_rows": 22158.0, "train_rows": 101292.0, "test_base_rate": 0.1193, "test_mean_pred": 0.1242, "n_iter": 80.0, "elasticity_rank_corr": 0.717, "monotonicity_violations": 0}
-🏃 View run hazard_hgb_monotone at: https://fevm-serverless-stable-69fppe.cloud.databricks.com/ml/experiments/1259616973424337/runs/2ad44c07c1b14619ab1075f38f72c92d
+== Registered serverless_stable_69fppe_catalog.piag_pricing.aged_inventory_pricing_model version 3 with alias @champion (run 8ca3a57ed70e4441974640aae50165fd)
+== SUMMARY {"registered_model": "serverless_stable_69fppe_catalog.piag_pricing.aged_inventory_pricing_model", "version": "3", "run_id": "8ca3a57ed70e4441974640aae50165fd", "test_auc": 0.6465, "test_log_loss": 0.3511, "test_brier": 0.102, "naive_auc": 0.5455, "naive_log_loss": 0.364, "test_rows": 22158.0, "train_rows": 101292.0, "test_base_rate": 0.1193, "test_mean_pred": 0.1242, "n_iter": 80.0, "elasticity_rank_corr": 0.717, "monotonicity_violations": 0}
+🏃 View run hazard_hgb_monotone at: https://fevm-serverless-stable-69fppe.cloud.databricks.com/ml/experiments/1259616973424337/runs/8ca3a57ed70e4441974640aae50165fd
 🧪 View experiment at: https://fevm-serverless-stable-69fppe.cloud.databricks.com/ml/experiments/1259616973424337
 ```
 

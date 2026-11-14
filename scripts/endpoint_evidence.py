@@ -25,7 +25,7 @@ def rec(r):
     d = {c: (float(r[c]) if c in NUM and r[c] not in (None, "") else r[c]) for c in COLS}
     for c in ("days_in_stock", "model_year", "mileage", "vdp_views_last_week", "leads_last_week",
               "test_drives_last_week", "weeks_listed"):
-        d[c] = int(d[c])
+        d[c] = int(d[c] or 0)
     d["price_override"] = None
     return d
 

@@ -167,8 +167,13 @@ def main() -> None:
               + example_out.drop(columns=["curve_json"]).to_string())
         here = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else os.getcwd()
         reg_name = f"{fq}.aged_inventory_pricing_model"
+        client = MlflowClient(registry_uri="databricks-uc")
+        try:  # stamp the version the registry is about to assign so served responses carry it
+            next_version = max(int(v.version) for v in client.search_model_versions(f"name='{reg_name}'")) + 1
+        except (ValueError, Exception):  # no versions yet / model not registered
+            next_version = 1
         info = mlflow.pyfunc.log_model(
-            artifact_path="pricing_model", python_model=PricingModel(None, "uc"),
+            artifact_path="pricing_model", python_model=PricingModel(None, str(next_version)),
             artifacts={"hazard_model": pkl},
             code_paths=[os.path.join(here, "pricing_core.py"), os.path.join(here, "pyfunc_model.py")],
             signature=infer_signature(example, example_out), input_example=example,
@@ -176,7 +181,8 @@ def main() -> None:
                               f"numpy=={np.__version__}", f"mlflow=={mlflow.__version__}"],
             registered_model_name=reg_name)
         version = info.registered_model_version
-        client = MlflowClient(registry_uri="databricks-uc")
+        if str(version) != str(next_version):
+            print(f"WARNING: registry assigned v{version}, model stamped v{next_version}")
         client.set_registered_model_alias(reg_name, "champion", version)
         client.update_registered_model(reg_name, description=(
             "Aged-inventory pricing copilot: weekly sale-hazard model (HistGradientBoosting, monotone in price-to-market) "

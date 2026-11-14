@@ -3,7 +3,7 @@
 Real on-hand vehicles read from `gold_inventory_current`, sent to the endpoint via the Databricks SDK (`serving_endpoints.query`). Raw request and response JSON below.
 
 ## Batch of 3 vehicles (aged used, aged used, fresh new)
-Round-trip latency: **1,163 ms** (client-measured, warm endpoint)
+Round-trip latency: **1,060 ms** (client-measured, warm endpoint)
 
 Request `dataframe_records`:
 ```json
@@ -195,7 +195,7 @@ Response `predictions`:
     "front_gross_at_price": -1062.0
    }
   ],
-  "model_version": "uc"
+  "model_version": "3"
  },
  {
   "vin": "1FT85MUNXPV186402",
@@ -304,7 +304,7 @@ Response `predictions`:
     "front_gross_at_price": -1167.0
    }
   ],
-  "model_version": "uc"
+  "model_version": "3"
  },
  {
   "vin": "1FTDJ7WR0VL683060",
@@ -413,12 +413,12 @@ Response `predictions`:
     "front_gross_at_price": -1112.0
    }
   ],
-  "model_version": "uc"
+  "model_version": "3"
  }
 ]
 ```
 ## What-if: first vehicle re-evaluated as if listed $1,500 lower (price_override)
-Round-trip latency: **425 ms** (client-measured, warm endpoint)
+Round-trip latency: **370 ms** (client-measured, warm endpoint)
 
 Request `dataframe_records`:
 ```json
@@ -560,7 +560,7 @@ Response `predictions`:
     "front_gross_at_price": -2562.0
    }
   ],
-  "model_version": "uc"
+  "model_version": "3"
  }
 ]
 ```
