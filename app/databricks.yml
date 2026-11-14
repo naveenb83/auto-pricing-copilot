@@ -1,0 +1,77 @@
+bundle:
+  name: piag-pricing-copilot
+
+variables:
+  sql_warehouse_id:
+    description: SQL Warehouse ID
+  files_path:
+    description: Volume path for file storage (e.g. /Volumes/catalog/schema/volume_name)
+  files_id:
+    description: Unity Catalog volume holding the CC-licensed vehicle photos (read-only for the app)
+  genie_space_id:
+    description: Default Genie Space ID
+  genie_space_name:
+    description: Genie Space display name
+  postgres_branch:
+    description: Full Lakebase Postgres branch resource name. Obtain by running `databricks postgres list-branches {project-name}`, select the desired item from the output array and use its .name value. Requires the project resource name.
+  postgres_database:
+    description: Full Lakebase Postgres database resource name. Obtain by running `databricks postgres list-databases {branch-name}`, select the desired item from the output array and use its .name value. Requires the branch resource name.
+  serving_endpoint_name:
+    description: Serving endpoint name
+
+resources:
+  apps:
+    app:
+      name: "piag-pricing-copilot"
+      description: "Pacific Isles Auto Group (fictional) aged-inventory pricing copilot: real-time Model/DS discount, manager override + reason (Lakebase), Genie"
+      source_code_path: ./
+
+      # Start the app automatically on deploy.
+      lifecycle:
+        started: true
+      user_api_scopes:
+        - dashboards.genie
+        - files.files
+        - serving.serving-endpoints
+
+      # The resources which this app has access to.
+      resources:
+        - name: sql-warehouse
+          sql_warehouse:
+            id: ${var.sql_warehouse_id}
+            permission: CAN_USE
+        - name: files
+          uc_securable:
+            securable_full_name: ${var.files_id}
+            securable_type: VOLUME
+            permission: READ_VOLUME
+        - name: genie-space
+          genie_space:
+            name: ${var.genie_space_name}
+            space_id: ${var.genie_space_id}
+            permission: CAN_RUN
+        - name: postgres
+          postgres:
+            branch: ${var.postgres_branch}
+            database: ${var.postgres_database}
+            permission: CAN_CONNECT_AND_CREATE
+        - name: serving-endpoint
+          serving_endpoint:
+            name: ${var.serving_endpoint_name}
+            permission: CAN_QUERY
+
+targets:
+  default:
+    default: true
+    workspace:
+      host: https://fevm-serverless-stable-69fppe.cloud.databricks.com
+
+    variables:
+      sql_warehouse_id: 8b226d8722ba3ab2
+      files_path: /Volumes/serverless_stable_69fppe_catalog/piag_pricing/media
+      files_id: serverless_stable_69fppe_catalog.piag_pricing.media
+      genie_space_id: 01f1e03bafe91748918dbc276f3cfd90
+      genie_space_name: Pacific Isles Pricing Copilot
+      postgres_branch: projects/piag-pricing/branches/production
+      postgres_database: projects/piag-pricing/branches/production/databases/databricks-postgres
+      serving_endpoint_name: piag-pricing-model
