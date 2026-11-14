@@ -26,8 +26,11 @@ inv = one(f"SELECT count(*) FROM {fq}.gold_inventory_current")
 recs = one(f"SELECT count(*) FROM {fq}.pricing_recommendations")
 checks["every on-hand unit scored"] = (inv == recs, f"{recs}/{inv}")
 champ = w.model_versions.get_by_alias(f"{fq}.aged_inventory_pricing_model", "champion").version
-served = w.serving_endpoints.get("piag-pricing-model").config.served_entities[0].entity_version
-checks["endpoint serves @champion"] = (str(champ) == str(served), f"champion v{champ}, served v{served}")
+ep_cfg = w.serving_endpoints.get("piag-pricing-model")
+served = sorted({str(e.entity_version) for e in (ep_cfg.config.served_entities or [])})
+rolling = ep_cfg.pending_config is not None
+checks["endpoint serves @champion"] = (served == [str(champ)] and not rolling,
+                                       f"champion v{champ}, served {served}{' (rollout in progress)' if rolling else ''}")
 g, n = spark.sql(f"SELECT count_if(grounded), count(*) FROM {fq}.pricing_rationale").first()
 checks["GenAI rationale grounded"] = (g == n and n > 0, f"{g}/{n}")
 aged = one(f"SELECT count(*) FROM {fq}.pricing_recommendations WHERE days_in_stock >= 45")
@@ -52,7 +55,7 @@ kpi = spark.sql(f"SELECT MEASURE(`Units On Hand`) u, MEASURE(`Aged 90+ Units`) a
 print("== Data journey health report")
 for k, (ok, detail) in checks.items():
     print(f"[{'PASS' if ok else 'FAIL'}] {k:<45} {detail}")
-print(f"== KPIs: {kpi.u} on hand, {kpi.a} aged 90+, ${kpi.h:,.0f}/day holding cost")
+print(f"== KPIs: {kpi.u or 0} on hand, {kpi.a or 0} aged 90+, ${float(kpi.h or 0):,.0f}/day holding cost")
 failed = [k for k, (ok, _) in checks.items() if not ok]
 print("== SUMMARY " + json.dumps({"checks": len(checks), "passed": len(checks) - len(failed), "failed": failed}))
 if failed:
