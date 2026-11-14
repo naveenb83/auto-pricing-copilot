@@ -1,0 +1,21 @@
+resources:
+  jobs:
+    lakebase_publish:
+      name: piag-lakebase-publish
+      description: "Publish governed gold tables (inventory, recommendations, rationale, segment targeting, KPIs) into Lakebase Postgres schema `serving` with an atomic swap."
+      parameters:
+        - name: app_sp
+          default: ""
+      tasks:
+        - task_key: publish
+          environment_key: lakebase
+          spark_python_task:
+            python_file: ../lakebase/publish.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}", --project, piag-pricing, --app_sp, "{{job.parameters.app_sp}}"]
+      environments:
+        - environment_key: lakebase
+          spec:
+            environment_version: "4"
+            dependencies:
+              - psycopg[binary]>=3.2
+              - databricks-sdk>=0.81
