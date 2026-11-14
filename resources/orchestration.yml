@@ -1,0 +1,47 @@
+resources:
+  jobs:
+    end_to_end:
+      name: piag-nightly-end-to-end
+      description: >-
+        Nightly data journey: Lakeflow ingest (bronze→silver→gold) → batch score with the @champion model →
+        GenAI rationale → publish to Lakebase serving → verify every stage incl. the Lakehouse Sync decision loop.
+        Retraining is a separate job (piag-train-pricing-model) that promotes the endpoint when it finishes.
+      schedule:
+        quartz_cron_expression: "0 0 2 * * ?"
+        timezone_id: Pacific/Honolulu
+        pause_status: PAUSED
+      max_concurrent_runs: 1
+      parameters:
+        - name: app_sp
+          default: "18d1bc33-eabe-4547-82e1-24cc3f835482"
+      tasks:
+        - task_key: lakeflow_ingest
+          pipeline_task:
+            pipeline_id: ${resources.pipelines.pricing_pipeline.id}
+        - task_key: score_with_champion
+          depends_on: [{task_key: lakeflow_ingest}]
+          run_job_task:
+            job_id: ${resources.jobs.score_inventory.id}
+        - task_key: genai_rationale
+          depends_on: [{task_key: score_with_champion}]
+          run_job_task:
+            job_id: ${resources.jobs.genai_rationale.id}
+        - task_key: lakebase_publish
+          depends_on: [{task_key: genai_rationale}]
+          run_job_task:
+            job_id: ${resources.jobs.lakebase_publish.id}
+            job_parameters:
+              app_sp: "{{job.parameters.app_sp}}"
+        - task_key: verify_journey
+          depends_on: [{task_key: lakebase_publish}]
+          environment_key: verify
+          spark_python_task:
+            python_file: ../jobs/verify_journey.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}"]
+      environments:
+        - environment_key: verify
+          spec:
+            environment_version: "4"
+            dependencies:
+              - psycopg[binary]>=3.2
+              - databricks-sdk>=0.81

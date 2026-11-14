@@ -55,3 +55,19 @@ resources:
             environment_version: "4"
             dependencies:
               - mlflow>=3.1
+
+    score_inventory:
+      name: piag-score-inventory
+      description: "Batch-score today's lot with the current @champion (no retraining) -> pricing_recommendations."
+      tasks:
+        - task_key: batch_score
+          environment_key: ml
+          spark_python_task:
+            python_file: ../ml/score_inventory.py
+            parameters: [--catalog, "${var.catalog}", --schema, "${var.schema}"]
+      environments:
+        - environment_key: ml
+          spec:
+            environment_version: "4"
+            dependencies:
+              - mlflow>=3.1
