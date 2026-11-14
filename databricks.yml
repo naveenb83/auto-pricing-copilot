@@ -11,6 +11,11 @@ variables:
   schema:
     description: Schema holding every governed asset for the pricing copilot
     default: piag_pricing
+  pricing_model_version:
+    description: >-
+      UC model version the endpoint is created with. After that, the training job's promote_endpoint task
+      moves the endpoint to each new @champion; bump this default to the champion before re-deploying.
+    default: "3"
   warehouse_id:
     description: SQL warehouse used by Genie, the app and SQL tasks
     default: 8b226d8722ba3ab2
