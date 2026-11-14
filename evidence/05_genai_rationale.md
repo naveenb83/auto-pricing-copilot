@@ -2,13 +2,13 @@
 
 Serverless job `piag-genai-rationale`. Segment targeting is deterministic SQL over campaign responses; the LLM only writes the words. Every number in each rationale/promo is checked against the model facts (vehicle names stripped first) — ungrounded rows are flagged and hidden in the app. Iterations (all in this PR): v1 93.4% grounded (false positives from 'CX-90' / 'Ioniq 5'), v2 fixed names + prompt, v3 added the $500-cut counterfactual and margin-floor fact so 'hold price' explanations are truthful.
 
-Job `piag-genai-rationale` (job_id 685652084999455), run_id 788827240099379 — captured 2026-11-14T14:38Z via `databricks jobs get-run(-output)`.
+Job `piag-genai-rationale` (job_id 685652084999455), run_id 948257620685704 — captured 2026-11-14T14:46Z via `databricks jobs get-run(-output)`.
 
 ```text
 result_state : SUCCESS
-start (UTC)  : 2026-11-14T14:34:49Z
-end (UTC)    : 2026-11-14T14:38:07Z
-task rationale                    SUCCESS  2026-11-14T14:34:49Z -> 2026-11-14T14:38:06Z
+start (UTC)  : 2026-11-14T14:43:00Z
+end (UTC)    : 2026-11-14T14:46:28Z
+task rationale                    SUCCESS  2026-11-14T14:43:00Z -> 2026-11-14T14:46:28Z
 ```
 
 ### Task `rationale` stdout
@@ -36,19 +36,19 @@ performance             2    value_retiree   1307                  7.65         
 == Generated 592 rationales with databricks-claude-haiku-5-5: parse failures 0, grounded 592/592 (100.0%)
 == 5 examples
 - R01-24544 | target first_time_buyer (then value_retiree)
-  WHY: The Mazda3 has been in stock 115 days and is priced at 102.3% of market, so a $250 cut from $24,590 to $24,340 is recommended. That cut is expected to shorten time to sell from 55 to 52 days and matches the flat-rule discount with no profit difference, while a $500 cut would only reduce it to 49 days and lower profit by $14.
-  PROMO: Mazda3 Base: Smart First Car Pick — Starting your first car? The new Mazda3 Base is now $250 off. Come test drive one today and see why it's a smart first choice.
+  WHY: The Mazda3 has sat in stock for 115 days and is priced at 1.02 times market, so a $250 cut to $24,340 is recommended. That cut is expected to bring the sale forward from 55 to 52 days and matches the flat-rule discount, with no change in profit versus that rule.
+  PROMO: Your First New Mazda3 Just Got Easier — Buying your first car? The new Mazda3 Base is now $250 off. Stop by for a test drive and see how simple it can be.
 - R01-26054 | target value_retiree (then young_family)
-  WHY: The new Mazda CX-90 has sat in stock 64 days and is priced about 5.2% above market, but a $500 cut would only shorten the expected sale from 74 to 73 days and change profit by -$42, so a cut is not expected to pay for itself. Holding the current $39,645 price is expected to earn $28 more than the flat $250 discount rule.
-  PROMO: Relaxed Ride: Mazda CX-90 Base — Enjoy a smooth, comfortable drive in Mazda's new SUV. Stop by for a test drive and see how easy it is to enjoy the road.
+  WHY: We recommend holding the price at $39,645 because a $500 cut would only shorten the expected 74 days to 73, saving about $32 in holding cost per day, while the discount would reduce profit by $42. The unit has been in stock 64 days and is priced at 1.052 times market, but the cut is still not expected to pay for itself.
+  PROMO: Relaxed, Reliable Mazda CX-90 for Retirement Years — Relaxed, reliable Mazda SUV ready for your next chapter. Visit our dealership to test drive today and enjoy a comfortable, confident ride.
 - R01-21211 | target value_retiree (then young_family)
-  WHY: The Base CX-90 has been in stock 223 days, costing $32 a day to hold, and a $500 cut would only shorten the expected sale from 60 to 54 days, adding about $63 in profit, so the cut is not expected to pay for itself. A cut would help a little but would take the deal below the group's minimum-margin floor, so this unit needs another exit plan, such as a dealer trade or wholesale review.
-  PROMO: 2026 Mazda CX-90 Base: Comfortable Value Today — Looking for a comfortable, easy-to-drive SUV? Our new Mazda SUV is ready for a relaxed test drive. Stop by this week and see how easy it is to drive.
+  WHY: A $500 cut would shorten the expected sale from 60 to 54 days, but that faster sale is only worth about $63 in extra profit, so a cut is not expected to pay for itself and the recommended discount is $0. Because a cut would also take the deal below the group's minimum-margin floor, it would help only a little, so this unit needs another exit plan such as a dealer trade or wholesale review.
+  PROMO: Relaxed Comfort: 2026 Mazda CX-90 Base — Hello from your local Mazda team: the CX-90 is ready for a relaxed, comfortable drive. Visit us for a no-pressure test drive this week.
 - R01-24816 | target first_time_buyer (then value_retiree)
-  WHY: The Mazda3 has sat in stock for 106 days and is priced at 1.02 times market, so a $500 cut to $24205 is expected to shorten the expected sale from 58 to 50 days. That faster sale is worth about $114 more in profit than the flat rule, so we recommend the cut.
-  PROMO: Mazda3 Base: Your Affordable First New Car — First-time buyer? Take $500 off the new Mazda3 Base today. Visit us for a test drive and see how affordable your first new car can be.
+  WHY: The 2026 Mazda3 Base has sat in stock for 106 days and is priced at 1.02 times market, with holding costs of $21 per day. A $500 cut to $24,205 is expected to shorten the expected sale from 58 to 50 days and add $114 in profit compared with the flat rule.
+  PROMO: Mazda3 Base: Your First New Car — Your first new Mazda is $500 off today. Test drive the Base trim and see how easy buying can be. Reply YES to book.
 - R01-22366 | target value_retiree (then young_family)
-  WHY: The 2026 Mazda CX-90 Base has sat 188 days and is priced about 5% above market, costing roughly $33 a day to hold. A $3,000 cut to $35,295 is expected to shorten time to sale from 85 to 68 days and add about $46 in profit versus the flat-rule price.
-  PROMO: 2026 Mazda CX-90 Base, Now $3,000 Off — Enjoy $3,000 off a brand-new Mazda SUV at our dealership today. Comfortable, capable and ready for your next chapter. Stop by for a no-pressure test drive!
+  WHY: This new 2026 CX-90 has sat 188 days and is priced at 1.052 times the market, so a $3,000 cut to $35,295 is expected to shorten time-to-sale from 85 to 68 days and add $46 in profit versus the flat rule. Holding costs run $33 per day, so the faster sale is worth more than the discount's drag on this unit.
+  PROMO: 2026 Mazda CX-90 Base: Now $3,000 Off — Hi! The Mazda CX-90 Base is now $3,000 off, offering reliable comfort and easy driving. Stop by for a test drive today.
 == SUMMARY {"rationales": 592, "parse_failures": 0, "grounded": 592, "grounded_pct": 100.0, "llm": "databricks-claude-haiku-5-5"}
 ```
