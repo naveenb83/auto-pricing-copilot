@@ -1,0 +1,483 @@
+{
+ "version": 2,
+ "config": {
+  "sample_questions": [
+   {
+    "id": "0466170bc9b4cc9824abf340c031fa63",
+    "question": [
+     "What was the average days to sell and front gross for retail sales by month?"
+    ]
+   },
+   {
+    "id": "92f6553ed3ab8fc757c3f6b6821cfaae",
+    "question": [
+     "Which customer segments respond best to pickup promotions?"
+    ]
+   },
+   {
+    "id": "9c1d8657429a5e9ba99ef63419f14c42",
+    "question": [
+     "How often are pricing managers overriding the model, and why?"
+    ]
+   },
+   {
+    "id": "a80ca5c9277229d0ecbe10caff13a25b",
+    "question": [
+     "Which aged units does the model recommend cutting by $1,500 or more?"
+    ]
+   },
+   {
+    "id": "dcac899066546b914bb868c97a8efabc",
+    "question": [
+     "How many units are aged 90+ days at each rooftop and what do they cost us per day?"
+    ]
+   },
+   {
+    "id": "ff1f805a1873e4225034430e09f0b7f2",
+    "question": [
+     "How much more profit does the model expect than the flat rule, by rooftop?"
+    ]
+   }
+  ]
+ },
+ "data_sources": {
+  "tables": [
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.backtest_policy_results",
+    "column_configs": [
+     {
+      "column_name": "policy",
+      "description": [
+       "flat_rule | model_guardrails | model_unconstrained"
+      ]
+     }
+    ]
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current",
+    "column_configs": [
+     {
+      "column_name": "aging_bucket",
+      "description": [
+       "Days-in-stock band: 0-29, 30-44, 45-59, 60-89, 90+"
+      ],
+      "synonyms": [
+       "age band"
+      ]
+     },
+     {
+      "column_name": "daily_holding_cost",
+      "description": [
+       "USD per day to carry this unit: floor-plan interest + lot cost + market depreciation"
+      ],
+      "synonyms": [
+       "carrying cost",
+       "holding cost",
+       "daily burn"
+      ]
+     },
+     {
+      "column_name": "price_to_market",
+      "description": [
+       "Current list price divided by market average price (1.05 = 5% above market)"
+      ],
+      "synonyms": [
+       "price position"
+      ]
+     },
+     {
+      "column_name": "rooftop_name",
+      "description": [
+       "Dealership name"
+      ],
+      "synonyms": [
+       "store",
+       "dealership",
+       "location"
+      ]
+     }
+    ]
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.gold_rooftop_weekly_kpis"
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.gold_sales_enriched",
+    "column_configs": [
+     {
+      "column_name": "customer_segment",
+      "description": [
+       "Buyer marketing segment"
+      ],
+      "synonyms": [
+       "segment"
+      ]
+     },
+     {
+      "column_name": "front_gross",
+      "description": [
+       "Sale price minus unit cost (masked unless the user is a margin viewer)"
+      ],
+      "synonyms": [
+       "gross",
+       "PVR",
+       "front-end gross"
+      ]
+     }
+    ]
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.gold_vehicle_status"
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.pricing_decisions",
+    "column_configs": [
+     {
+      "column_name": "decision",
+      "description": [
+       "accepted | overridden | held"
+      ]
+     },
+     {
+      "column_name": "model_value",
+      "description": [
+       "Model/DS recommended discount at decision time, USD"
+      ],
+      "synonyms": [
+       "model value",
+       "DS value"
+      ]
+     },
+     {
+      "column_name": "override_value",
+      "description": [
+       "Pricing manager's discount when they overrode the model, USD"
+      ],
+      "synonyms": [
+       "override value"
+      ]
+     },
+     {
+      "column_name": "reason_code",
+      "description": [
+       "Why the model was overridden"
+      ],
+      "synonyms": [
+       "override reason"
+      ]
+     }
+    ]
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.pricing_rationale",
+    "column_configs": [
+     {
+      "column_name": "top_segment",
+      "description": [
+       "Customer segment most likely to respond to a promotion for this vehicle"
+      ],
+      "synonyms": [
+       "target segment"
+      ]
+     }
+    ]
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.pricing_recommendations",
+    "column_configs": [
+     {
+      "column_name": "expected_days_to_sell_now",
+      "description": [
+       "Expected days to sell at today's price"
+      ]
+     },
+     {
+      "column_name": "expected_days_to_sell_recommended",
+      "description": [
+       "Expected days to sell if the recommended discount is applied"
+      ]
+     },
+     {
+      "column_name": "flat_rule_discount",
+      "description": [
+       "Additional discount the old flat $250 (45+ days) / $500 (90+ days) rule would give"
+      ],
+      "synonyms": [
+       "flat rule",
+       "old rule"
+      ]
+     },
+     {
+      "column_name": "recommended_discount",
+      "description": [
+       "Model/DS recommended ADDITIONAL discount in USD (0 = hold price)"
+      ],
+      "synonyms": [
+       "model value",
+       "recommended cut"
+      ]
+     },
+     {
+      "column_name": "uplift_vs_flat_rule",
+      "description": [
+       "Expected profit of the model recommendation minus expected profit of the flat rule, USD"
+      ],
+      "synonyms": [
+       "uplift"
+      ]
+     }
+    ]
+   },
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.segment_targeting",
+    "column_configs": [
+     {
+      "column_name": "leads_per_1000_sends",
+      "description": [
+       "Leads created per 1,000 promotion sends"
+      ],
+      "synonyms": [
+       "response rate"
+      ]
+     }
+    ]
+   }
+  ],
+  "metric_views": [
+   {
+    "identifier": "serverless_stable_69fppe_catalog.piag_pricing.piag_pricing_kpis"
+   }
+  ]
+ },
+ "instructions": {
+  "text_instructions": [
+   {
+    "id": "2e1abf9001932834e7f480a0d6ec9b10",
+    "content": [
+     "Business: Pacific Isles Auto Group (fictional, synthetic data), 6 rooftops (dealerships), new + used vehicles.\n",
+     "The business date is 2026-11-13 (as_of_date). 'Today', 'now', 'current' mean as of 2026-11-13, not current_date().\n",
+     "Aged inventory = on-hand units with days_in_stock >= 90. 'Aging' units = 45+ days. Use gold_inventory_current for anything about today's lot.\n",
+     "Holding / carrying cost per day = daily_holding_cost (floor-plan interest + $6 lot cost + market depreciation). Monthly cost = daily x 30.\n",
+     "Model/DS value = pricing_recommendations.recommended_discount (additional cut on top of the current price). The old policy is the flat rule: $250 at 45+ days, $500 at 90+ days (flat_rule_discount).\n",
+     "Pricing decisions made by managers in the app are in pricing_decisions (one row per decision): decision = accepted / overridden / held; override_value + reason_code when overridden.\n",
+     "Customer segment responsiveness to promotions: use segment_targeting (segment_rank 1 = best) or gold_segment_response for offer-level detail.\n",
+     "Backtest (digital twin, 120 days, 20 paired futures): backtest_policy_results; compare policies on avg(net_profit) and avg(aged90_day60).\n",
+     "Gross profit and unit cost columns are masked (NULL) for users who are not margin viewers \u2014 if they come back NULL, say the user lacks access rather than reporting zero.\n",
+     "Date windows: 'last N days' means date > DATE'2026-11-13' - INTERVAL N DAYS AND date <= DATE'2026-11-13' (inclusive of the business date).\n",
+     "Sales, wholesale auction exits and dealer trades: use gold_sales_enriched (channel = retail | wholesale | dealer_trade, sale_date, sale_month).\n",
+     "Always show money in USD rounded to whole dollars and percentages to one decimal place.\n"
+    ]
+   }
+  ],
+  "example_question_sqls": [
+   {
+    "id": "28ae0e8783386adb86974038562ec465",
+    "question": [
+     "Aged units and daily holding cost by rooftop"
+    ],
+    "sql": [
+     "SELECT rooftop_name, count(*) AS units_on_hand, count_if(days_in_stock >= 90) AS aged_90_plus, round(100 * count_if(days_in_stock >= 90) / count(*), 1) AS pct_aged_90_plus, round(sum(CASE WHEN days_in_stock >= 90 THEN daily_holding_cost END), 0) AS aged_holding_cost_per_day FROM serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current GROUP BY rooftop_name ORDER BY aged_90_plus DESC"
+    ]
+   },
+   {
+    "id": "42dda5ac69c290db85b1173432bebfed",
+    "question": [
+     "Model recommendation vs flat rule for aged units"
+    ],
+    "sql": [
+     "SELECT r.stock_number, r.make, r.model, r.model_year, r.days_in_stock, r.current_price, r.recommended_discount, r.flat_rule_discount, r.expected_days_to_sell_now, r.expected_days_to_sell_recommended, r.uplift_vs_flat_rule FROM serverless_stable_69fppe_catalog.piag_pricing.pricing_recommendations r WHERE r.days_in_stock >= 90 ORDER BY r.uplift_vs_flat_rule DESC LIMIT 20"
+    ]
+   },
+   {
+    "id": "b18ae4428679beae6d3db578bc09cc9e",
+    "question": [
+     "Best responding segments for a body class"
+    ],
+    "sql": [
+     "SELECT segment, leads_per_1000_sends, lift_vs_body_class_avg, offer_sensitivity FROM serverless_stable_69fppe_catalog.piag_pricing.segment_targeting WHERE body_class = 'pickup' ORDER BY segment_rank"
+    ]
+   },
+   {
+    "id": "f3305a2e466f1d6bbcbdc9860f84fd7c",
+    "question": [
+     "Override rate and reasons"
+    ],
+    "sql": [
+     "SELECT reason_code, count(*) AS decisions, round(avg(override_delta), 0) AS avg_override_delta_usd FROM serverless_stable_69fppe_catalog.piag_pricing.pricing_decisions WHERE decision = 'overridden' GROUP BY reason_code ORDER BY decisions DESC"
+    ]
+   }
+  ]
+ },
+ "benchmarks": {
+  "questions": [
+   {
+    "id": "05cec6dfb5405d43c6a22a568c741cbf",
+    "question": [
+     "Which rooftop has the highest share of units aged 90+ days?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT rooftop_name, round(100 * count_if(days_in_stock >= 90) / count(*), 1) AS pct FROM serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current GROUP BY 1 ORDER BY 2 DESC LIMIT 1"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "1658f5537129ab106d4f307b96049372",
+    "question": [
+     "Which segment is the best target for minivan promotions?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT segment FROM serverless_stable_69fppe_catalog.piag_pricing.segment_targeting WHERE body_class = 'minivan' AND segment_rank = 1"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "192ec0b8fd3927c24717dd021898ee11",
+    "question": [
+     "How many units were wholesaled at auction in the last 90 days before the business date?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT count(*) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_sales_enriched WHERE channel = 'wholesale' AND sale_date > DATE'2026-11-13' - INTERVAL 90 DAYS"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "38ec849eafdc412c7db487a4836f039e",
+    "question": [
+     "What is the total daily holding cost of all on-hand inventory?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT round(sum(daily_holding_cost), 0) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "4327deabf5f667573b653717a0e6ebe8",
+    "question": [
+     "How many on-hand units are 90 or more days old?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT count(*) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current WHERE days_in_stock >= 90"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "4e59f0b1843ff467ce2172ff8be06325",
+    "question": [
+     "What is the average days in stock of on-hand used vehicles?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT round(avg(days_in_stock), 1) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current WHERE condition = 'used'"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "8641fcf38e1bf5afe2cf5359916ea78d",
+    "question": [
+     "Which make has the most aged 90+ day units on hand?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT make, count(*) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current WHERE days_in_stock >= 90 GROUP BY make ORDER BY 2 DESC LIMIT 1"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "97d78ea69203423e6977009c76e4bfce",
+    "question": [
+     "How many retail units were sold in October 2026?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT count(*) FROM serverless_stable_69fppe_catalog.piag_pricing.gold_sales_enriched WHERE channel = 'retail' AND sale_month = DATE'2026-10-01'"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "c2cfb6dd261c2171bc2cd7ac483ae668",
+    "question": [
+     "In the backtest, what was the average net profit for each policy?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT policy, round(avg(net_profit), 0) AS avg_net_profit FROM serverless_stable_69fppe_catalog.piag_pricing.backtest_policy_results GROUP BY policy ORDER BY 2 DESC"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "dd121f044ae1b643aec5836367abb8a2",
+    "question": [
+     "What is the total expected profit uplift of the model over the flat rule across today's lot?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT round(sum(uplift_vs_flat_rule), 0) FROM serverless_stable_69fppe_catalog.piag_pricing.pricing_recommendations"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "e6276b9d3a72bec3be6cfa87d475e268",
+    "question": [
+     "How many on-hand units does the model recommend holding price on?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT count(*) FROM serverless_stable_69fppe_catalog.piag_pricing.pricing_recommendations WHERE recommended_discount = 0"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "e9c4520f1a113b3025feb32ab7317a80",
+    "question": [
+     "How many vehicles are on hand today?"
+    ],
+    "answer": [
+     {
+      "format": "SQL",
+      "content": [
+       "SELECT count(*) AS units_on_hand FROM serverless_stable_69fppe_catalog.piag_pricing.gold_inventory_current"
+      ]
+     }
+    ]
+   }
+  ]
+ }
+}
