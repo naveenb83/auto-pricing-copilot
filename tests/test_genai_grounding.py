@@ -21,3 +21,9 @@ def test_invented_numbers_are_caught():
 def test_model_name_digits_are_not_statistics():
     ok, _ = grounded("This CX-90 is ready now.", FACTS)
     assert ok
+
+
+def test_missing_counterfactual_values_do_not_crash():
+    f = dict(FACTS, days_if_500_cut=float("nan"), profit_change_if_500_cut=None)
+    ok, _ = grounded("A $3,000 cut sells it in 68 days.", f)
+    assert ok

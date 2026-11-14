@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 
 LLM = "databricks-claude-haiku-5-5"
@@ -85,7 +86,8 @@ def grounded(text: str, facts: dict) -> tuple[bool, list[float]]:
         if name:
             text = text.replace(name, " ")
     allowed = set()
-    vals = [v for v in facts.values() if isinstance(v, (int, float)) and not isinstance(v, bool)]
+    vals = [float(v) for v in facts.values()
+            if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(float(v))]
     for v in vals:
         for x in (v, abs(v), round(v), round(v, 1), round(v, 2), round(v * 100), round(v * 100, 1),
                   round((v - 1) * 100), round((v - 1) * 100, 1), round(v / 7), round(v / 1000, 1), round(v / 30)):
@@ -131,6 +133,8 @@ def main() -> None:
         try:
             j = json.loads(re.sub(r"^```(json)?|```$", "", (raw or "").strip()).strip())
         except Exception:
+            j = None
+        if not isinstance(j, dict):  # invalid JSON, or valid JSON that is not an object
             j, parse_fail = {}, parse_fail + 1
         facts = {c: r[c] for c in facts_cols}
         text = f"{j.get('rationale', '')} {j.get('promo_message', '')} {j.get('promo_headline', '')}"
