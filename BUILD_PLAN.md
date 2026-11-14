@@ -64,3 +64,17 @@ generator (serverless job) → /Volumes/.../landing/{entity}/dt=YYYY-MM-DD/*.csv
 ## Status log
 - 2026-11-14: plan agreed with Naveen (full ML optimiser scope; real-time model call with Model/DS value,
   Override value, Reason; realistic car photos).
+- 2026-11-14/15: PR1 data+photos MERGED · PR2 Lakeflow MERGED (pipeline id 9cd13098-a413-48f6-bff8-eadf9c20b653)
+  · PR3 UC governance MERGED (11 workspace-local groups; ABAC via is_member(); account-group GRANTs documented
+  not applied) · PR4 ML open: model v2 @champion, endpoint `piag-pricing-model` READY (scale-to-zero),
+  backtest +$80k/120d vs flat rule, aged90 -36%. Jobs: generate 298498322183881, train 1077639647439960.
+  Gotchas: bash `GROUPS` is reserved (created junk groups, deleted); is_member cache ~5-7 min after
+  membership change; workspace governs tag keys owner_team/ml/domain → use piag_ keys; DAB dev mode
+  prefixes schema names → no `mode: development`.
+- NEXT: PR5 GenAI (ai_query rationale + segment pitch) → PR6 Lakebase → PR7 Genie → PR8 App → PR9 job → PR10 deck.
+- 2026-11-15: PR5 GenAI MERGED (592/592 grounded) · PR6 Lakebase MERGED (project piag-pricing, Lakehouse Sync cdf config
+  piag_pricing_ops) · PR7 Genie MERGED (space 01f1e03bafe91748918dbc276f3cfd90, 5 eval passes, final 12/12 result-set)
+  · PR8 App MERGED (piag-pricing-copilot, SP 18d1bc33-…; UC SELECT+READ VOLUME, groups leadership+margin viewers,
+  PG SELECT serving / INSERT decisions) · PR9 nightly job MERGED (7/7 checks) · PR10 deck + demo scripts + README.
+- REMAINING before submission: Naveen final review → make repo PUBLIC (after scrub) → submit (repo link, deck.pdf, conversation id).
+  Cost hygiene: endpoint is scale-to-zero; app compute runs while started (`databricks apps stop piag-pricing-copilot`).
